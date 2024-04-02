@@ -1,4 +1,4 @@
-import { CharacteristicValue, PlatformAccessory } from 'homebridge';
+import { CharacteristicGetCallback, CharacteristicSetCallback, CharacteristicValue, PlatformAccessory } from 'homebridge';
 import { HubspacePlatform } from '../platform';
 import { HubspaceAccessory } from './hubspace-accessory';
 import { isNullOrUndefined } from '../utils';
@@ -8,7 +8,7 @@ import convert from 'color-convert';
 /**
  * Light accessory for Hubspace platform
  */
-export class LightAccessory extends HubspaceAccessory{
+export class LightAccessory extends HubspaceAccessory {
     /**
      * Color information for lights that support RGB
      */
@@ -18,7 +18,7 @@ export class LightAccessory extends HubspaceAccessory{
     } = {};
 
     /**
-     * Crates a new instance of the accessory
+     * Creates a new instance of the accessory
      * @param platform Hubspace platform
      * @param accessory Platform accessory
      */
@@ -30,22 +30,22 @@ export class LightAccessory extends HubspaceAccessory{
         this.configureColorRgb();
     }
 
-    private configurePower(): void{
+    private configurePower(): void {
         this.service.getCharacteristic(this.platform.Characteristic.On)
             .onGet(this.getOn.bind(this))
             .onSet(this.setOn.bind(this));
     }
 
-    private configureBrightness(): void{
-        if(!this.supportsCharacteristic(FunctionCharacteristic.Brightness)) return;
+    private configureBrightness(): void {
+        if (!this.supportsCharacteristic(FunctionCharacteristic.Brightness)) return;
 
         this.service.getCharacteristic(this.platform.Characteristic.Brightness)
             .onGet(this.getBrightness.bind(this))
             .onSet(this.setBrightness.bind(this));
     }
 
-    private configureColorRgb(): void{
-        if(!this.supportsCharacteristic(FunctionCharacteristic.ColorRgb)) return;
+    private configureColorRgb(): void {
+        if (!this.supportsCharacteristic(FunctionCharacteristic.ColorRgb)) return;
 
         this.service.getCharacteristic(this.platform.Characteristic.Hue)
             .onGet(this.getHue.bind(this))
@@ -56,108 +56,141 @@ export class LightAccessory extends HubspaceAccessory{
             .onSet(this.setSaturation.bind(this));
     }
 
-    private async getHue(): Promise<CharacteristicValue>{
-        const deviceFc = this.getFunctionForCharacteristics(FunctionCharacteristic.ColorRgb);
-        // Try to get the value
-        const value = await this.deviceService.getValueAsString(this.device.deviceId, deviceFc);
+    private async getHue(callback: CharacteristicGetCallback): Promise<void> {
+        try {
+            const deviceFc = this.getFunctionForCharacteristics(FunctionCharacteristic.ColorRgb);
+            const value = await this.deviceService.getValueAsString(this.device.deviceId, deviceFc);
 
-        // If the value is not defined then show 'Not Responding'
-        if(!value){
-            this.setNotResponding();
-        }
+            if (!value) {
+                this.setNotResponding();
+                callback(new Error('Value not available'));
+                return;
+            }
 
-        const color = convert.hex.hsl(value);
-
-        return color[0];
-    }
-
-    private async setHue(value: CharacteristicValue): Promise<void>{
-        this._lightColor.hue = value as number;
-
-        if(this.isColorDefined()){
-            await this.setRgbColor(this._lightColor.hue!, this._lightColor.saturation!);
-            this.resetColor();
+            const color = convert.hex.hsl(value);
+            callback(null, color[0]);
+        } catch (error) {
+            callback(error);
         }
     }
 
-    private async getSaturation(): Promise<CharacteristicValue>{
-        const deviceFc = this.getFunctionForCharacteristics(FunctionCharacteristic.ColorRgb);
-        // Try to get the value
-        const value = await this.deviceService.getValueAsString(this.device.deviceId, deviceFc);
+    private async setHue(value: CharacteristicValue, callback: CharacteristicSetCallback): Promise<void> {
+        try {
+            this._lightColor.hue = value as number;
 
-        // If the value is not defined then show 'Not Responding'
-        if(!value){
-            this.setNotResponding();
-        }
+            if (this.isColorDefined()) {
+                await this.setRgbColor(this._lightColor.hue!, this._lightColor.saturation!);
+                this.resetColor();
+            }
 
-        const color = convert.hex.hsl(value);
-
-        return color[1];
-    }
-
-    private async setSaturation(value: CharacteristicValue): Promise<void>{
-        this._lightColor.saturation = value as number;
-
-        if(this.isColorDefined()){
-            await this.setRgbColor(this._lightColor.hue!, this._lightColor.saturation!);
-            this.resetColor();
+            callback(null);
+        } catch (error) {
+            callback(error);
         }
     }
 
-    private async getOn(): Promise<CharacteristicValue>{
-        const deviceFc = this.getFunctionForCharacteristics(FunctionCharacteristic.Power);
-        // Try to get the value
-        const value = await this.deviceService.getValueAsBoolean(this.device.deviceId, deviceFc);
+    private async getSaturation(callback: CharacteristicGetCallback): Promise<void> {
+        try {
+            const deviceFc = this.getFunctionForCharacteristics(FunctionCharacteristic.ColorRgb);
+            const value = await this.deviceService.getValueAsString(this.device.deviceId, deviceFc);
 
-        // If the value is not defined then show 'Not Responding'
-        if(isNullOrUndefined(value)){
-            throw new this.platform.api.hap.HapStatusError(this.platform.api.hap.HAPStatus.SERVICE_COMMUNICATION_FAILURE);
+            if (!value) {
+                this.setNotResponding();
+                callback(new Error('Value not available'));
+                return;
+            }
+
+            const color = convert.hex.hsl(value);
+            callback(null, color[1]);
+        } catch (error) {
+            callback(error);
         }
-
-        // Otherwise return the value
-        return value!;
     }
 
-    private async setOn(value: CharacteristicValue): Promise<void>{
-        const deviceFc = this.getFunctionForCharacteristics(FunctionCharacteristic.Power);
+    private async setSaturation(value: CharacteristicValue, callback: CharacteristicSetCallback): Promise<void> {
+        try {
+            this._lightColor.saturation = value as number;
 
-        await this.deviceService.setValue(this.device.deviceId, deviceFc, value);
-    }
+            if (this.isColorDefined()) {
+                await this.setRgbColor(this._lightColor.hue!, this._lightColor.saturation!);
+                this.resetColor();
+            }
 
-    private async getBrightness(): Promise<CharacteristicValue>{
-        const deviceFc = this.getFunctionForCharacteristics(FunctionCharacteristic.Brightness);
-        // Try to get the value
-        const value = await this.deviceService.getValueAsInteger(this.device.deviceId, deviceFc);
-
-        // If the value is not defined then show 'Not Responding'
-        if(isNullOrUndefined(value) || value === -1){
-            throw new this.platform.api.hap.HapStatusError(this.platform.api.hap.HAPStatus.SERVICE_COMMUNICATION_FAILURE);
+            callback(null);
+        } catch (error) {
+            callback(error);
         }
-
-        // Otherwise return the value
-        return value!;
     }
 
-    private async setBrightness(value: CharacteristicValue): Promise<void>{
-        const deviceFc = this.getFunctionForCharacteristics(FunctionCharacteristic.Brightness);
+    private async getOn(callback: CharacteristicGetCallback): Promise<void> {
+        try {
+            const deviceFc = this.getFunctionForCharacteristics(FunctionCharacteristic.Power);
+            const value = await this.deviceService.getValueAsBoolean(this.device.deviceId, deviceFc);
 
-        this.deviceService.setValue(this.device.deviceId, deviceFc, value);
+            if (isNullOrUndefined(value)) {
+                throw new this.platform.api.hap.HapStatusError(this.platform.api.hap.HAPStatus.SERVICE_COMMUNICATION_FAILURE);
+            }
+
+            callback(null, value!);
+        } catch (error) {
+            callback(error);
+        }
     }
 
-    private setRgbColor(hue: number, saturation: number): Promise<void>{
-        const deviceFc = this.getFunctionForCharacteristics(FunctionCharacteristic.ColorRgb);
-        const hexValue = convert.hsv.hex([hue, saturation, 100]) as string;
+    private async setOn(value: CharacteristicValue, callback: CharacteristicSetCallback): Promise<void> {
+        try {
+            const deviceFc = this.getFunctionForCharacteristics(FunctionCharacteristic.Power);
+            await this.deviceService.setValue(this.device.deviceId, deviceFc, value);
 
-        return this.deviceService.setValue(this.device.deviceId, deviceFc, hexValue);
+            callback(null);
+        } catch (error) {
+            callback(error);
+        }
     }
 
-    private resetColor(): void{
+    private async getBrightness(callback: CharacteristicGetCallback): Promise<void> {
+        try {
+            const deviceFc = this.getFunctionForCharacteristics(FunctionCharacteristic.Brightness);
+            const value = await this.deviceService.getValueAsInteger(this.device.deviceId, deviceFc);
+
+            if (isNullOrUndefined(value) || value === -1) {
+                throw new this.platform.api.hap.HapStatusError(this.platform.api.hap.HAPStatus.SERVICE_COMMUNICATION_FAILURE);
+            }
+
+            callback(null, value!);
+        } catch (error) {
+            callback(error);
+        }
+    }
+
+    private async setBrightness(value: CharacteristicValue, callback: CharacteristicSetCallback): Promise<void> {
+        try {
+            const deviceFc = this.getFunctionForCharacteristics(FunctionCharacteristic.Brightness);
+            await this.deviceService.setValue(this.device.deviceId, deviceFc, value);
+
+            callback(null);
+        } catch (error) {
+            callback(error);
+        }
+    }
+
+    private async setRgbColor(hue: number, saturation: number): Promise<void> {
+        try {
+            const deviceFc = this.getFunctionForCharacteristics(FunctionCharacteristic.ColorRgb);
+            const hexValue = convert.hsv.hex([hue, saturation, 100]) as string;
+
+            await this.deviceService.setValue(this.device.deviceId, deviceFc, hexValue);
+        } catch (error) {
+            throw new Error(`Failed to set RGB color: ${error.message}`);
+        }
+    }
+
+    private resetColor(): void {
         this._lightColor.hue = undefined;
         this._lightColor.saturation = undefined;
     }
 
-    private isColorDefined(): boolean{
+    private isColorDefined(): boolean {
         return !isNullOrUndefined(this._lightColor.hue) && !isNullOrUndefined(this._lightColor.saturation);
     }
-
 }
