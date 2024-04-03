@@ -183,7 +183,7 @@ export class LightAccessory extends HubspaceAccessory {
 
             await this.deviceService.setValue(this.device.deviceId, deviceFc, hexValue);
         } catch (error) {
-            throw new Error(`Failed to set RGB color: ${error.message}`);
+            throw new Error(`Failed to set RGB color: ${(error as Error).message}`);
         }
     }
 
