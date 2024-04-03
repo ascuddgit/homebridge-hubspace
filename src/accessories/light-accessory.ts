@@ -56,7 +56,7 @@ export class LightAccessory extends HubspaceAccessory {
             .onSet(this.setSaturation.bind(this));
     }
 
-    private async getHue(callback: CharacteristicGetCallback): Promise<void> {
+    private async getHue(callback: CharacteristicGetCallback): Promise<CharacteristicValue> {
         try {
             const deviceFc = this.getFunctionForCharacteristics(FunctionCharacteristic.ColorRgb);
             const value = await this.deviceService.getValueAsString(this.device.deviceId, deviceFc);
@@ -67,9 +67,60 @@ export class LightAccessory extends HubspaceAccessory {
             }
 
             const color = convert.hex.hsl(value);
-            callback(null, color[0]);
-        } catch (error: any) {
+            return color[0];
+        } catch (error) {
             callback(error instanceof Error ? error : new Error('Unknown error'));
+            throw error;
+        }
+    }
+
+    private async getSaturation(callback: CharacteristicGetCallback): Promise<CharacteristicValue> {
+        try {
+            const deviceFc = this.getFunctionForCharacteristics(FunctionCharacteristic.ColorRgb);
+            const value = await this.deviceService.getValueAsString(this.device.deviceId, deviceFc);
+
+            if (!value) {
+                this.setNotResponding();
+                throw new Error('Value not available');
+            }
+
+            const color = convert.hex.hsl(value);
+            return color[1];
+        } catch (error) {
+            callback(error instanceof Error ? error : new Error('Unknown error'));
+            throw error;
+        }
+    }
+
+    private async getOn(callback: CharacteristicGetCallback): Promise<CharacteristicValue> {
+        try {
+            const deviceFc = this.getFunctionForCharacteristics(FunctionCharacteristic.Power);
+            const value = await this.deviceService.getValueAsBoolean(this.device.deviceId, deviceFc);
+
+            if (isNullOrUndefined(value)) {
+                throw new Error('Value not available');
+            }
+
+            return value!;
+        } catch (error) {
+            callback(error instanceof Error ? error : new Error('Unknown error'));
+            throw error;
+        }
+    }
+
+    private async getBrightness(callback: CharacteristicGetCallback): Promise<CharacteristicValue> {
+        try {
+            const deviceFc = this.getFunctionForCharacteristics(FunctionCharacteristic.Brightness);
+            const value = await this.deviceService.getValueAsInteger(this.device.deviceId, deviceFc);
+
+            if (isNullOrUndefined(value) || value === -1) {
+                throw new Error('Value not available');
+            }
+
+            return value!;
+        } catch (error) {
+            callback(error instanceof Error ? error : new Error('Unknown error'));
+            throw error;
         }
     }
 
@@ -83,24 +134,7 @@ export class LightAccessory extends HubspaceAccessory {
             }
 
             callback(null);
-        } catch (error: any) {
-            callback(error instanceof Error ? error : new Error('Unknown error'));
-        }
-    }
-
-    private async getSaturation(callback: CharacteristicGetCallback): Promise<void> {
-        try {
-            const deviceFc = this.getFunctionForCharacteristics(FunctionCharacteristic.ColorRgb);
-            const value = await this.deviceService.getValueAsString(this.device.deviceId, deviceFc);
-
-            if (!value) {
-                this.setNotResponding();
-                throw new Error('Value not available');
-            }
-
-            const color = convert.hex.hsl(value);
-            callback(null, color[1]);
-        } catch (error: any) {
+        } catch (error) {
             callback(error instanceof Error ? error : new Error('Unknown error'));
         }
     }
@@ -115,22 +149,7 @@ export class LightAccessory extends HubspaceAccessory {
             }
 
             callback(null);
-        } catch (error: any) {
-            callback(error instanceof Error ? error : new Error('Unknown error'));
-        }
-    }
-
-    private async getOn(callback: CharacteristicGetCallback): Promise<void> {
-        try {
-            const deviceFc = this.getFunctionForCharacteristics(FunctionCharacteristic.Power);
-            const value = await this.deviceService.getValueAsBoolean(this.device.deviceId, deviceFc);
-
-            if (isNullOrUndefined(value)) {
-                throw new Error('Value not available');
-            }
-
-            callback(null, value!);
-        } catch (error: any) {
+        } catch (error) {
             callback(error instanceof Error ? error : new Error('Unknown error'));
         }
     }
@@ -141,22 +160,7 @@ export class LightAccessory extends HubspaceAccessory {
             await this.deviceService.setValue(this.device.deviceId, deviceFc, value);
 
             callback(null);
-        } catch (error: any) {
-            callback(error instanceof Error ? error : new Error('Unknown error'));
-        }
-    }
-
-    private async getBrightness(callback: CharacteristicGetCallback): Promise<void> {
-        try {
-            const deviceFc = this.getFunctionForCharacteristics(FunctionCharacteristic.Brightness);
-            const value = await this.deviceService.getValueAsInteger(this.device.deviceId, deviceFc);
-
-            if (isNullOrUndefined(value) || value === -1) {
-                throw new Error('Value not available');
-            }
-
-            callback(null, value!);
-        } catch (error: any) {
+        } catch (error) {
             callback(error instanceof Error ? error : new Error('Unknown error'));
         }
     }
@@ -167,7 +171,7 @@ export class LightAccessory extends HubspaceAccessory {
             await this.deviceService.setValue(this.device.deviceId, deviceFc, value);
 
             callback(null);
-        } catch (error: any) {
+        } catch (error) {
             callback(error instanceof Error ? error : new Error('Unknown error'));
         }
     }
@@ -178,7 +182,7 @@ export class LightAccessory extends HubspaceAccessory {
             const hexValue = convert.hsv.hex([hue, saturation, 100]) as string;
 
             await this.deviceService.setValue(this.device.deviceId, deviceFc, hexValue);
-        } catch (error: any) {
+        } catch (error) {
             throw new Error(`Failed to set RGB color: ${error.message}`);
         }
     }
