@@ -1,4 +1,4 @@
-import { CharacteristicGetCallback, CharacteristicSetCallback, CharacteristicValue, PlatformAccessory, HAPStatus } from 'homebridge';
+import { CharacteristicGetCallback, CharacteristicSetCallback, CharacteristicValue, PlatformAccessory } from 'homebridge';
 import { HubspacePlatform } from '../platform';
 import { HubspaceAccessory } from './hubspace-accessory';
 import { isNullOrUndefined } from '../utils';
@@ -129,7 +129,7 @@ export class LightAccessory extends HubspaceAccessory {
             this._lightColor.hue = value as number;
 
             if (this.isColorDefined()) {
-                await this.setRgbColor(this._lightColor.hue!, this._lightColor.saturation!);
+                await this.setRgbColor(this._lightColor.hue!, this._lightColor.saturation!, callback);
                 this.resetColor();
             }
 
@@ -144,7 +144,7 @@ export class LightAccessory extends HubspaceAccessory {
             this._lightColor.saturation = value as number;
 
             if (this.isColorDefined()) {
-                await this.setRgbColor(this._lightColor.hue!, this._lightColor.saturation!);
+                await this.setRgbColor(this._lightColor.hue!, this._lightColor.saturation!, callback);
                 this.resetColor();
             }
 
@@ -176,14 +176,16 @@ export class LightAccessory extends HubspaceAccessory {
         }
     }
 
-    private async setRgbColor(hue: number, saturation: number): Promise<void> {
+    private async setRgbColor(hue: number, saturation: number, callback: CharacteristicSetCallback): Promise<void> {
         try {
             const deviceFc = this.getFunctionForCharacteristics(FunctionCharacteristic.ColorRgb);
             const hexValue = convert.hsv.hex([hue, saturation, 100]) as string;
 
             await this.deviceService.setValue(this.device.deviceId, deviceFc, hexValue);
+
+            callback(null);
         } catch (error) {
-            throw new Error(`Failed to set RGB color: ${(error as Error).message}`);
+            callback(error instanceof Error ? error : new Error('Unknown error'));
         }
     }
 
