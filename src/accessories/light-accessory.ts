@@ -125,35 +125,35 @@ export class LightAccessory extends HubspaceAccessory {
     }
 
     private async setHue(value: CharacteristicValue, callback: CharacteristicSetCallback): Promise<void> {
-        try {
-            this._lightColor.hue = value as number;
+    try {
+        this._lightColor.hue = value as number;
 
-            if (this.isColorDefined()) {
-                await this.setRgbColor(this._lightColor.hue!, this._lightColor.saturation!, callback);
-                this.resetColor();
-            }
-
-            callback(null);
-        } catch (error) {
-            callback(error instanceof Error ? error : new Error('Unknown error'));
+        if (this.isColorDefined()) {
+            await this.setRgbColor(this._lightColor.hue!, this._lightColor.saturation!);
+            this.resetColor();
         }
+
+        callback(null);
+    } catch (error) {
+        callback(error instanceof Error ? error : new Error('Unknown error'));
     }
+}
 
-    private async setSaturation(value: CharacteristicValue, callback: CharacteristicSetCallback): Promise<void> {
-        try {
-            this._lightColor.saturation = value as number;
+private async setSaturation(value: CharacteristicValue, callback: CharacteristicSetCallback): Promise<void> {
+    try {
+        this._lightColor.saturation = value as number;
 
-            if (this.isColorDefined()) {
-                await this.setRgbColor(this._lightColor.hue!, this._lightColor.saturation!, callback);
-                this.resetColor();
-            }
-
-            callback(null);
-        } catch (error) {
-            callback(error instanceof Error ? error : new Error('Unknown error'));
+        if (this.isColorDefined()) {
+            await this.setRgbColor(this._lightColor.hue!, this._lightColor.saturation!);
+            this.resetColor();
         }
-    }
 
+        callback(null);
+    } catch (error) {
+        callback(error instanceof Error ? error : new Error('Unknown error'));
+    }
+}
+    
     private async setOn(value: CharacteristicValue, callback: CharacteristicSetCallback): Promise<void> {
         try {
             const deviceFc = this.getFunctionForCharacteristics(FunctionCharacteristic.Power);
