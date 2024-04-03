@@ -1,4 +1,4 @@
-import { CharacteristicGetCallback, CharacteristicSetCallback, CharacteristicValue, PlatformAccessory } from 'homebridge';
+import { CharacteristicGetCallback, CharacteristicSetCallback, CharacteristicValue, PlatformAccessory, HAPStatus } from 'homebridge';
 import { HubspacePlatform } from '../platform';
 import { HubspaceAccessory } from './hubspace-accessory';
 import { isNullOrUndefined } from '../utils';
@@ -69,7 +69,7 @@ export class LightAccessory extends HubspaceAccessory {
             const color = convert.hex.hsl(value);
             callback(null, color[0]);
         } catch (error: any) {
-            callback(error);
+            callback(error instanceof Error ? error : new Error('Unknown error'));
         }
     }
 
@@ -84,7 +84,7 @@ export class LightAccessory extends HubspaceAccessory {
 
             callback(null);
         } catch (error: any) {
-            callback(error);
+            callback(error instanceof Error ? error : new Error('Unknown error'));
         }
     }
 
@@ -101,7 +101,7 @@ export class LightAccessory extends HubspaceAccessory {
             const color = convert.hex.hsl(value);
             callback(null, color[1]);
         } catch (error: any) {
-            callback(error);
+            callback(error instanceof Error ? error : new Error('Unknown error'));
         }
     }
 
@@ -116,7 +116,7 @@ export class LightAccessory extends HubspaceAccessory {
 
             callback(null);
         } catch (error: any) {
-            callback(error);
+            callback(error instanceof Error ? error : new Error('Unknown error'));
         }
     }
 
@@ -131,7 +131,7 @@ export class LightAccessory extends HubspaceAccessory {
 
             callback(null, value!);
         } catch (error: any) {
-            callback(error);
+            callback(error instanceof Error ? error : new Error('Unknown error'));
         }
     }
 
@@ -142,7 +142,7 @@ export class LightAccessory extends HubspaceAccessory {
 
             callback(null);
         } catch (error: any) {
-            callback(error);
+            callback(error instanceof Error ? error : new Error('Unknown error'));
         }
     }
 
@@ -157,7 +157,7 @@ export class LightAccessory extends HubspaceAccessory {
 
             callback(null, value!);
         } catch (error: any) {
-            callback(error);
+            callback(error instanceof Error ? error : new Error('Unknown error'));
         }
     }
 
@@ -168,7 +168,7 @@ export class LightAccessory extends HubspaceAccessory {
 
             callback(null);
         } catch (error: any) {
-            callback(error);
+            callback(error instanceof Error ? error : new Error('Unknown error'));
         }
     }
 
