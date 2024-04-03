@@ -68,7 +68,7 @@ export class LightAccessory extends HubspaceAccessory {
 
             const color = convert.hex.hsl(value);
             callback(null, color[0]);
-        } catch (error) {
+        } catch (error: any) {
             callback(error);
         }
     }
@@ -83,7 +83,7 @@ export class LightAccessory extends HubspaceAccessory {
             }
 
             callback(null);
-        } catch (error) {
+        } catch (error: any) {
             callback(error);
         }
     }
@@ -100,7 +100,7 @@ export class LightAccessory extends HubspaceAccessory {
 
             const color = convert.hex.hsl(value);
             callback(null, color[1]);
-        } catch (error) {
+        } catch (error: any) {
             callback(error);
         }
     }
@@ -115,7 +115,7 @@ export class LightAccessory extends HubspaceAccessory {
             }
 
             callback(null);
-        } catch (error) {
+        } catch (error: any) {
             callback(error);
         }
     }
@@ -130,7 +130,7 @@ export class LightAccessory extends HubspaceAccessory {
             }
 
             callback(null, value!);
-        } catch (error) {
+        } catch (error: any) {
             callback(error);
         }
     }
@@ -141,7 +141,7 @@ export class LightAccessory extends HubspaceAccessory {
             await this.deviceService.setValue(this.device.deviceId, deviceFc, value);
 
             callback(null);
-        } catch (error) {
+        } catch (error: any) {
             callback(error);
         }
     }
@@ -156,7 +156,7 @@ export class LightAccessory extends HubspaceAccessory {
             }
 
             callback(null, value!);
-        } catch (error) {
+        } catch (error: any) {
             callback(error);
         }
     }
@@ -167,7 +167,7 @@ export class LightAccessory extends HubspaceAccessory {
             await this.deviceService.setValue(this.device.deviceId, deviceFc, value);
 
             callback(null);
-        } catch (error) {
+        } catch (error: any) {
             callback(error);
         }
     }
@@ -178,8 +178,8 @@ export class LightAccessory extends HubspaceAccessory {
             const hexValue = convert.hsv.hex([hue, saturation, 100]) as string;
 
             await this.deviceService.setValue(this.device.deviceId, deviceFc, hexValue);
-        } catch (error) {
-            throw new Error(`Failed to set RGB color: ${error instanceof Error ? error.message : 'Unknown error'}`);
+        } catch (error: any) {
+            throw new Error(`Failed to set RGB color: ${error.message}`);
         }
     }
 
