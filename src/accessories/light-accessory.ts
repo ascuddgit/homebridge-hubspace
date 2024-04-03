@@ -56,7 +56,7 @@ export class LightAccessory extends HubspaceAccessory {
             .onSet(this.setSaturation.bind(this));
     }
 
-    private async getHue(callback: CharacteristicGetCallback): Promise<CharacteristicValue> {
+    private async getHue(callback: CharacteristicGetCallback): Promise<void> {
         try {
             const deviceFc = this.getFunctionForCharacteristics(FunctionCharacteristic.ColorRgb);
             const value = await this.deviceService.getValueAsString(this.device.deviceId, deviceFc);
@@ -68,10 +68,8 @@ export class LightAccessory extends HubspaceAccessory {
 
             const color = convert.hex.hsl(value);
             callback(null, color[0]);
-            return color[0];
         } catch (error) {
             callback(error);
-            throw error;
         }
     }
 
@@ -87,11 +85,10 @@ export class LightAccessory extends HubspaceAccessory {
             callback(null);
         } catch (error) {
             callback(error);
-            throw error;
         }
     }
 
-    private async getSaturation(callback: CharacteristicGetCallback): Promise<CharacteristicValue> {
+    private async getSaturation(callback: CharacteristicGetCallback): Promise<void> {
         try {
             const deviceFc = this.getFunctionForCharacteristics(FunctionCharacteristic.ColorRgb);
             const value = await this.deviceService.getValueAsString(this.device.deviceId, deviceFc);
@@ -103,10 +100,8 @@ export class LightAccessory extends HubspaceAccessory {
 
             const color = convert.hex.hsl(value);
             callback(null, color[1]);
-            return color[1];
         } catch (error) {
             callback(error);
-            throw error;
         }
     }
 
@@ -122,11 +117,10 @@ export class LightAccessory extends HubspaceAccessory {
             callback(null);
         } catch (error) {
             callback(error);
-            throw error;
         }
     }
 
-    private async getOn(callback: CharacteristicGetCallback): Promise<CharacteristicValue> {
+    private async getOn(callback: CharacteristicGetCallback): Promise<void> {
         try {
             const deviceFc = this.getFunctionForCharacteristics(FunctionCharacteristic.Power);
             const value = await this.deviceService.getValueAsBoolean(this.device.deviceId, deviceFc);
@@ -136,10 +130,8 @@ export class LightAccessory extends HubspaceAccessory {
             }
 
             callback(null, value!);
-            return value!;
         } catch (error) {
             callback(error);
-            throw error;
         }
     }
 
@@ -151,11 +143,10 @@ export class LightAccessory extends HubspaceAccessory {
             callback(null);
         } catch (error) {
             callback(error);
-            throw error;
         }
     }
 
-    private async getBrightness(callback: CharacteristicGetCallback): Promise<CharacteristicValue> {
+    private async getBrightness(callback: CharacteristicGetCallback): Promise<void> {
         try {
             const deviceFc = this.getFunctionForCharacteristics(FunctionCharacteristic.Brightness);
             const value = await this.deviceService.getValueAsInteger(this.device.deviceId, deviceFc);
@@ -165,10 +156,8 @@ export class LightAccessory extends HubspaceAccessory {
             }
 
             callback(null, value!);
-            return value!;
         } catch (error) {
             callback(error);
-            throw error;
         }
     }
 
@@ -180,7 +169,6 @@ export class LightAccessory extends HubspaceAccessory {
             callback(null);
         } catch (error) {
             callback(error);
-            throw error;
         }
     }
 
