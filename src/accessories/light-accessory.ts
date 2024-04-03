@@ -67,6 +67,7 @@ export class LightAccessory extends HubspaceAccessory {
             }
 
             const color = convert.hex.hsl(value);
+            callback(null, color[0]); // Callback with the retrieved value
             return color[0];
         } catch (error) {
             callback(error instanceof Error ? error : new Error('Unknown error'));
@@ -85,6 +86,7 @@ export class LightAccessory extends HubspaceAccessory {
             }
 
             const color = convert.hex.hsl(value);
+            callback(null, color[1]); // Callback with the retrieved value
             return color[1];
         } catch (error) {
             callback(error instanceof Error ? error : new Error('Unknown error'));
@@ -101,6 +103,7 @@ export class LightAccessory extends HubspaceAccessory {
                 throw new Error('Value not available');
             }
 
+            callback(null, value!); // Callback with the retrieved value
             return value!;
         } catch (error) {
             callback(error instanceof Error ? error : new Error('Unknown error'));
@@ -117,6 +120,7 @@ export class LightAccessory extends HubspaceAccessory {
                 throw new Error('Value not available');
             }
 
+            callback(null, value!); // Callback with the retrieved value
             return value!;
         } catch (error) {
             callback(error instanceof Error ? error : new Error('Unknown error'));
@@ -129,13 +133,13 @@ export class LightAccessory extends HubspaceAccessory {
             this._lightColor.hue = value as number;
 
             if (this.isColorDefined()) {
-                await this.setRgbColor(this._lightColor.hue!, this._lightColor.saturation!, callback);
+                await this.setRgbColor(this._lightColor.hue!, this._lightColor.saturation!);
                 this.resetColor();
             }
 
-            callback(null);
+            callback(null); // Callback to indicate success
         } catch (error) {
-            callback(error instanceof Error ? error : new Error('Unknown error'));
+            callback(error instanceof Error ? error : new Error('Unknown error')); // Callback with the error
         }
     }
 
@@ -144,13 +148,13 @@ export class LightAccessory extends HubspaceAccessory {
             this._lightColor.saturation = value as number;
 
             if (this.isColorDefined()) {
-                await this.setRgbColor(this._lightColor.hue!, this._lightColor.saturation!, callback);
+                await this.setRgbColor(this._lightColor.hue!, this._lightColor.saturation!);
                 this.resetColor();
             }
 
-            callback(null);
+            callback(null); // Callback to indicate success
         } catch (error) {
-            callback(error instanceof Error ? error : new Error('Unknown error'));
+            callback(error instanceof Error ? error : new Error('Unknown error')); // Callback with the error
         }
     }
 
@@ -159,9 +163,9 @@ export class LightAccessory extends HubspaceAccessory {
             const deviceFc = this.getFunctionForCharacteristics(FunctionCharacteristic.Power);
             await this.deviceService.setValue(this.device.deviceId, deviceFc, value);
 
-            callback(null);
+            callback(null); // Callback to indicate success
         } catch (error) {
-            callback(error instanceof Error ? error : new Error('Unknown error'));
+            callback(error instanceof Error ? error : new Error('Unknown error')); // Callback with the error
         }
     }
 
@@ -170,22 +174,20 @@ export class LightAccessory extends HubspaceAccessory {
             const deviceFc = this.getFunctionForCharacteristics(FunctionCharacteristic.Brightness);
             await this.deviceService.setValue(this.device.deviceId, deviceFc, value);
 
-            callback(null);
+            callback(null); // Callback to indicate success
         } catch (error) {
-            callback(error instanceof Error ? error : new Error('Unknown error'));
+            callback(error instanceof Error ? error : new Error('Unknown error')); // Callback with the error
         }
     }
 
-    private async setRgbColor(hue: number, saturation: number, callback: CharacteristicSetCallback): Promise<void> {
+    private async setRgbColor(hue: number, saturation: number): Promise<void> {
         try {
             const deviceFc = this.getFunctionForCharacteristics(FunctionCharacteristic.ColorRgb);
             const hexValue = convert.hsv.hex([hue, saturation, 100]) as string;
 
             await this.deviceService.setValue(this.device.deviceId, deviceFc, hexValue);
-
-            callback(null);
         } catch (error) {
-            callback(error instanceof Error ? error : new Error('Unknown error'));
+            throw new Error(`Failed to set RGB color: ${(error as Error).message}`);
         }
     }
 
